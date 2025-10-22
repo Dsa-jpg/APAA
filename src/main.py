@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 
-from data.data_generator import DataGenerator
-from neuron.linear_neuron import LinearNeuron
+from src.data.data_generator import DataGenerator
+from src.neuron.linear_neuron import LinearNeuron
 
 data = DataGenerator(a1=100, a2=20, f1=250, f2=1000)
 t, signal = data.generate()
