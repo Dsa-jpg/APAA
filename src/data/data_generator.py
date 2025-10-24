@@ -4,7 +4,7 @@ import numpy as np
 class DataGenerator(object):
 
     def __init__(self, a1: float, a2: float, f1: float, f2: float, duration: float = 100.0,
-                 sampling_rate: float = 1000):
+                 sampling_rate: float = 5):
         self.a1 = a1
         self.a2 = a2
         self.f1 = f1
