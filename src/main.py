@@ -15,13 +15,14 @@ f1 = st.sidebar.slider("f1 (Frequency 1)", 50, 500, 250, step=10)
 f2 = st.sidebar.slider("f2 (Frequency 2)", 50, 500, 100, step=10)
 
 st.sidebar.header("LNU parameters")
-learning_rate = st.sidebar.number_input("Learning rate", min_value=0.0001, max_value=1.000, value=0.001, step=0.0001,
-                                        format="%.4f")
+learning_rate = st.sidebar.number_input(
+    "Learning rate", min_value=0.0001, max_value=1.000, value=0.001, step=0.0001, format="%.4f"
+)
 epochs = st.sidebar.slider("Epochs", 10, 500, 100, step=10)
 look_back_window = st.sidebar.slider("Look-back window", 1, 10, 5, step=1)
+future_steps = st.sidebar.slider("Future steps", 1, 200, 10, step=1)
 
 run_simulation = st.sidebar.button("Run simulation")
-
 tabs = st.tabs(["Signal", "LNU"])
 
 
@@ -39,7 +40,7 @@ def plot_signal(t, signal):
     st.plotly_chart(fig, use_container_width=True)
 
 
-def plot_LNU(t, normalized_signal, predicted_values, Error, weights_history):
+def plot_LNU(t, normalized_signal, predicted_values, future_pred, Error, weights_history):
     fig = make_subplots(
         rows=3, cols=1,
         shared_xaxes=False,
@@ -49,14 +50,29 @@ def plot_LNU(t, normalized_signal, predicted_values, Error, weights_history):
     )
 
     fig.add_trace(
-        go.Scatter(x=t, y=normalized_signal, mode='lines', name='Normalized Signal', line=dict(color='red')),
+        go.Scatter(x=t[:len(normalized_signal)], y=normalized_signal, mode='lines', name='Normalized Signal',
+                   line=dict(color='red')),
         row=1, col=1
     )
+
     fig.add_trace(
-        go.Scatter(x=t, y=predicted_values, mode='markers', name='Predicted Values',
-                   marker=dict(size=5, color='green', opacity=0.8)),
+        go.Scatter(x=t[:len(predicted_values)], y=predicted_values, mode='markers', name='Predicted Values',
+                   line=dict(color='green')),
         row=1, col=1
     )
+
+    if future_pred is not None:
+        fig.add_trace(
+            go.Scatter(
+                x=t[len(predicted_values):],
+                y=future_pred,
+                mode='lines+markers',
+                name='Future Prediction',
+                line=dict(color='orange', dash='dot'),
+                marker=dict(symbol='circle-open')
+            ),
+            row=1, col=1
+        )
 
     fig.add_trace(
         go.Scatter(x=list(range(1, len(Error) + 1)), y=Error, mode='lines', name='Error', line=dict(color='blue')),
@@ -97,7 +113,6 @@ def plot_LNU(t, normalized_signal, predicted_values, Error, weights_history):
 
 with tabs[0]:
     st.header("Generated Signal")
-
     if run_simulation:
         data = DataGenerator(a1=a1, a2=a2, f1=f1, f2=f2)
         t, signal = data.generate()
@@ -107,7 +122,6 @@ with tabs[0]:
 
 with tabs[1]:
     st.header("Linear Neuron Learning (LNU)")
-
     if run_simulation:
         data = DataGenerator(a1=a1, a2=a2, f1=f1, f2=f2)
         t, signal = data.generate()
@@ -117,13 +131,11 @@ with tabs[1]:
                            look_back_window=look_back_window)
         LNU.learn(epochs=epochs)
 
-        Y_pred = LNU.pred
-        Error = LNU.error
-        weights_history = np.array(LNU.weights_history)
-        last_key = list(Y_pred.keys())[-1]
-        print(f"Predicted value: {Y_pred[last_key]}, Time stamp: {last_key}")
-        predicted_values = [np.nan] * look_back_window + list(Y_pred.values())
+        predicted_values = [np.nan] * look_back_window + list(LNU.pred.values())
 
-        plot_LNU(t, normalized_signal, predicted_values, Error, weights_history)
+        future_pred = LNU.predict_future(future_steps)
+        extended_t = np.arange(len(normalized_signal) + future_steps)
+
+        plot_LNU(extended_t, normalized_signal, predicted_values, future_pred, LNU.error, np.array(LNU.weights_history))
     else:
         st.info("Click run simulation.")

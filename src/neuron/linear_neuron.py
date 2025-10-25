@@ -48,6 +48,23 @@ class LinearNeuron(object):
         """
         return np.dot(x_vector, self.weights)
 
+    def predict_future(self, n_steps):
+        """
+        Predicts future signal for n_steps.
+
+        :param n_steps:
+        :return:
+        """
+        last_values = list(self.signal[-self.look_back_window:])
+        future_pred = []
+
+        for _ in range(n_steps):
+            next_value = np.dot(last_values[::-1], self.weights)
+            future_pred.append(next_value)
+            last_values = last_values[1:] + [next_value]
+
+        return future_pred
+
     def learn(self, epochs=10, debug=False):
         """
         Performs n epochs of learning of simple LNU
