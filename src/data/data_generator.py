@@ -12,9 +12,9 @@ class DataGenerator(object):
         self.duration = duration
         self.sampling_rate = sampling_rate
 
-    def generate(self):
-        t = np.linspace(0, self.duration, int(self.duration * self.sampling_rate))
-        signal = self.a1 * np.sin(self.a1 * np.pi * self.f1 * t) + self.a2 * np.sin(self.a2 * np.pi * self.f2 * t)
+    def generate(self, t_stop, dt):
+        t = np.arange(0, t_stop, dt)
+        signal = self.a1 * np.sin(np.pi * self.f1 * t) + self.a2 * np.sin(np.pi * self.f2 * t)
         return t, signal
 
     @staticmethod
