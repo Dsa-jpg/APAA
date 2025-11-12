@@ -1,35 +1,53 @@
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
+import wfdb
 from matplotlib import ticker
 
 matplotlib.use('TkAgg')
 
-a1 = 4
-a2 = -2
-a3 = 2
-a4 = -1
-f = 130
-f2 = 250
-f3 = 50
-t_stop = 10
-fs = 2000
-dt = 1 / fs
+# -------------------------------------#
+record = wfdb.rdrecord('./nsrdb/16265')
+annotation = wfdb.rdann('./nsrdb/16265', 'atr')
+
+y = record.p_signal[:, 0]  # first channel
+N = len(y)
+fs = int(record.fs)
+t = np.arange(N) / fs
+
+# Signal limit _s
+t_max = 100
+N_max = int(fs * t_max)
+y = y[:N_max]
+t = t[:N_max]
+N = len(y)
+# -------------------------------------#
+
 mu = 0.01
-n_weights = 3
-
-t = np.arange(0, t_stop, dt)
-N = len(t)
-
-y = a1 * np.sin(2 * np.pi * f * t) + a2 * np.sin(2 * np.pi * f * t)
-
-t1 = int(len(t) * 0.2)
-t2 = int(len(t) * 0.4)
-t3 = int(len(t) * 0.7)
-t4 = int(len(t) * 0.8)
-
-y[t1:t2] += a3 * np.sin(2 * np.pi * f2 * t[t1:t2])
-y[t3:t4] += a3 * np.cos(2 * np.pi * f3 * t[t3:t4])
+n_weights = 10
+# a1 = 4
+# a2 = -2
+# a3 = 2
+# a4 = -1
+# f = 130
+# f2 = 250
+# f3 = 50
+# t_stop = 10
+# fs = 2000
+# dt = 1 / fs
+#
+# t = np.arange(0, t_stop, dt)
+# N = len(t)
+#
+# y = a1 * np.sin(2 * np.pi * f * t) + a2 * np.sin(2 * np.pi * f * t)
+#
+# t1 = int(len(t) * 0.2)
+# t2 = int(len(t) * 0.4)
+# t3 = int(len(t) * 0.7)
+# t4 = int(len(t) * 0.8)
+#
+# y[t1:t2] += a3 * np.sin(2 * np.pi * f2 * t[t1:t2])
+# y[t3:t4] += a3 * np.cos(2 * np.pi * f3 * t[t3:t4])
 
 w = np.random.randn(n_weights) / n_weights  # np.zeros(n_weights)
 y_pred = np.zeros(N)
@@ -75,8 +93,8 @@ axes[3].set_ylabel("Sum of Δw²")
 axes[3].legend(loc='upper right')
 axes[3].grid(True)
 
-axes[3].xaxis.set_major_locator(ticker.MultipleLocator(1.0))  # major ticks every 1 second
-axes[3].xaxis.set_minor_locator(ticker.MultipleLocator(0.1))  # minor ticks every 0.1 s
+axes[3].xaxis.set_major_locator(ticker.MultipleLocator(10.0))  # major ticks every 1 second
+axes[3].xaxis.set_minor_locator(ticker.MultipleLocator(5))  # minor ticks every 0.1 s
 axes[3].xaxis.set_major_formatter(ticker.FormatStrFormatter('%.1f'))
 
 plt.tight_layout(pad=2.5)

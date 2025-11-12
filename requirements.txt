@@ -1,3 +1,5 @@
+pandas
+wfdb
 streamlit
 numpy~=2.2.6
 matplotlib~=3.10.7
